@@ -76,20 +76,18 @@ const compraFinalizada = ref(false)
 
 function finalizarCompra() {
   if (!puedeComprar.value) return
-  compraFinalizada.value = true
-  // Mostrar mensaje de éxito
+
   compraFinalizada.value = true
 
-  // Vaciar carrito
-  tienda.carrito = []
+  // Vaciar carrito de forma reactiva
+  tienda.carrito.splice(0, tienda.carrito.length)
 
   // Resetear datos del cliente
   cliente.nombre = ''
   cliente.email = ''
 
-  // Mensaje se visualiza por un rato
   setTimeout(() => {
-  compraFinalizada.value = false
+    compraFinalizada.value = false
   }, 3000)
 }
 </script>
@@ -209,12 +207,12 @@ function finalizarCompra() {
 
 <style scoped>
 .app {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 2rem auto;
   padding: 1.5rem;
   display: grid;
-  grid-template-columns: 2fr 2fr 2fr;
-  gap: 1rem;
+  grid-template-columns: 2fr 2fr 1.8fr;
+  gap: 1.5rem;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -349,22 +347,28 @@ function finalizarCompra() {
 
 /* Cliente */
 .panel-cliente .campo {
-  margin-bottom: 0.7rem;
+  margin-bottom: 0.9rem;
 }
 
-.panel-cliente input {
-  width: 100%;
-  margin-top: 0.25rem;
-  padding: 0.4rem 0.5rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+.panel-cliente label {
+  display: block;
   font-size: 0.9rem;
 }
 
-.panel-cliente .ayuda {
-  margin-top: 0.5rem;
-  font-size: 0.85rem;
-  color: #c0392b;
+.panel-cliente input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0.35rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  background-color: #fff;
+}
+
+.panel-cliente {
+  padding: 1.2rem;
 }
 
 .mensaje-exito {
@@ -380,6 +384,10 @@ function finalizarCompra() {
 @media (max-width: 900px) {
   .app {
     grid-template-columns: 1fr;
+  }
+
+  .panel {
+    margin-bottom: 1rem;
   }
 }
 </style>
