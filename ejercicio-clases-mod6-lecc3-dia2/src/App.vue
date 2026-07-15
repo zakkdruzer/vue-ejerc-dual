@@ -61,10 +61,9 @@ const descuento = computed(() => {
 
 const total = computed(() => subtotal.value - descuento.value)
 
-const emailValido = computed(() => {
-  const valor = cliente.email.trim()
-  return valor.includes('@') && valor.includes('.')
-})
+const emailValido = computed(() =>
+  /^[^@]+@[^@]+\.[^@]+$/.test(cliente.email)
+)
 
 const puedeComprar = computed(() => {
   return totalItems.value > 0 &&
@@ -74,4 +73,91 @@ const puedeComprar = computed(() => {
 </script>
 
 <template>
+  <main class="app">
+    <!-- Catálogo -->
+    <section class="catalogo">
+      <h2>Catálogo</h2>
+
+      <ul>
+        <li
+          v-for="producto in tienda.catalogo"
+          :key="producto.id"
+          class="producto"
+        >
+          <span>{{ producto.nombre }}</span>
+          <span>\${{ producto.precio.toLocaleString('es-CL') }}</span>
+          <button @click="agregarAlCarrito(producto)">
+            + Agregar
+          </button>
+        </li>
+      </ul>
+    </section>
+    <!-- Carrito -->
+    <section class="carrito">
+      <h2>Carrito ({{ totalItems }})</h2>
+
+      <p v-if="tienda.carrito.length === 0">
+        El carrito está vacío 🛒
+      </p>
+
+      <ul v-else>
+        <li
+          v-for="item in tienda.carrito"
+          :key="item.id"
+          class="carrito-item"
+        >
+          <span>{{ item.nombre }}</span>
+          <span>Unidad: \${{ item.precio.toLocaleString('es-CL') }}</span>
+          <span>Cantidad: {{ item.cantidad }}</span>
+
+          <button @click="cambiarCantidad(item.id, -1)">−</button>
+          <button @click="cambiarCantidad(item.id, +1)">+</button>
+          <button @click="quitarDelCarrito(item.id)">Quitar</button>
+        </li>
+      </ul>
+
+      <!-- Totales -->
+      <div class="totales">
+        <p>Subtotal: \${{ subtotal.toLocaleString('es-CL') }}</p>
+        <p>Descuento: −\${{ descuento.toLocaleString('es-CL') }}</p>
+        <p>Total: \${{ total.toLocaleString('es-CL') }}</p>
+      </div>
+    </section>
+    <!-- Datos del cliente -->
+    <section class="cliente">
+      <h2>Tus datos</h2>
+
+      <div>
+        <label>
+          Nombre *
+          <input
+            type="text"
+            v-model="cliente.nombre"
+            placeholder="Tu nombre"
+          />
+        </label>
+      </div>
+
+      <div>
+        <label>
+          Email *
+          <input
+            type="email"
+            v-model="cliente.email"
+            placeholder="tucorreo@mail.com"
+          />
+        </label>
+      </div>
+
+      <button
+        :disabled="!puedeComprar"
+      >
+        Finalizar compra
+      </button>
+
+      <p v-if="!puedeComprar">
+        Completa carrito y datos
+      </p>
+    </section>
+  </main>
 </template>
