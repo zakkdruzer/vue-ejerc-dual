@@ -86,6 +86,11 @@ function finalizarCompra() {
   // Resetear datos del cliente
   cliente.nombre = ''
   cliente.email = ''
+
+  // Mensaje se visualiza por un rato
+  setTimeout(() => {
+  compraFinalizada.value = false
+  }, 3000)
 }
 </script>
 
