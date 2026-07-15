@@ -77,10 +77,15 @@ const compraFinalizada = ref(false)
 function finalizarCompra() {
   if (!puedeComprar.value) return
   compraFinalizada.value = true
-  // opcional: podrías vaciar carrito o resetear cliente aquí
-  // tienda.carrito = []
-  // cliente.nombre = ''
-  // cliente.email = ''
+  // Mostrar mensaje de éxito
+  compraFinalizada.value = true
+
+  // Vaciar carrito
+  tienda.carrito = []
+
+  // Resetear datos del cliente
+  cliente.nombre = ''
+  cliente.email = ''
 }
 </script>
 
