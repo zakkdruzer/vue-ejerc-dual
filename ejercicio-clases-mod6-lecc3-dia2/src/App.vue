@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, computed } from 'vue'
+import { reactive, computed, ref } from 'vue'
 
 const tienda = reactive({
   catalogo: [
@@ -44,7 +44,7 @@ function cambiarCantidad(id, delta) {
   item.cantidad = nuevaCantidad < 1 ? 1 : nuevaCantidad
 }
 
-const totalItems = computed(() => 
+const totalItems = computed(() =>
   tienda.carrito.reduce((acc, item) => acc + item.cantidad, 0)
 )
 
@@ -70,64 +70,92 @@ const puedeComprar = computed(() => {
     cliente.nombre.trim() !== '' &&
     emailValido.value
 })
+
+// Mensaje de éxito
+const compraFinalizada = ref(false)
+
+function finalizarCompra() {
+  if (!puedeComprar.value) return
+  compraFinalizada.value = true
+  // opcional: podrías vaciar carrito o resetear cliente aquí
+  // tienda.carrito = []
+  // cliente.nombre = ''
+  // cliente.email = ''
+}
 </script>
 
 <template>
   <main class="app">
     <!-- Catálogo -->
-    <section class="catalogo">
+    <section class="panel panel-catalogo">
       <h2>Catálogo</h2>
 
-      <ul>
+      <ul class="lista">
         <li
           v-for="producto in tienda.catalogo"
           :key="producto.id"
-          class="producto"
+          class="item item-producto"
         >
-          <span>{{ producto.nombre }}</span>
-          <span>\${{ producto.precio.toLocaleString('es-CL') }}</span>
-          <button @click="agregarAlCarrito(producto)">
+          <div class="item-info">
+            <span class="item-nombre">{{ producto.nombre }}</span>
+            <span class="item-precio">
+              \${{ producto.precio.toLocaleString('es-CL') }}
+            </span>
+          </div>
+          <button class="btn btn-agregar" @click="agregarAlCarrito(producto)">
             + Agregar
           </button>
         </li>
       </ul>
     </section>
+
     <!-- Carrito -->
-    <section class="carrito">
+    <section class="panel panel-carrito">
       <h2>Carrito ({{ totalItems }})</h2>
 
-      <p v-if="tienda.carrito.length === 0">
+      <p v-if="tienda.carrito.length === 0" class="carrito-vacio">
         El carrito está vacío 🛒
       </p>
 
-      <ul v-else>
+      <ul v-else class="lista">
         <li
           v-for="item in tienda.carrito"
           :key="item.id"
-          class="carrito-item"
+          class="item item-carrito"
         >
-          <span>{{ item.nombre }}</span>
-          <span>Unidad: \${{ item.precio.toLocaleString('es-CL') }}</span>
-          <span>Cantidad: {{ item.cantidad }}</span>
+          <div class="item-info">
+            <span class="item-nombre">{{ item.nombre }}</span>
+            <span class="item-precio">
+              Unidad: \${{ item.precio.toLocaleString('es-CL') }}
+            </span>
+            <span class="item-cantidad">
+              Cantidad: {{ item.cantidad }}
+            </span>
+          </div>
 
-          <button @click="cambiarCantidad(item.id, -1)">−</button>
-          <button @click="cambiarCantidad(item.id, +1)">+</button>
-          <button @click="quitarDelCarrito(item.id)">Quitar</button>
+          <div class="item-controles">
+            <button class="btn btn-cantidad" @click="cambiarCantidad(item.id, -1)">−</button>
+            <button class="btn btn-cantidad" @click="cambiarCantidad(item.id, +1)">+</button>
+            <button class="btn btn-quitar" @click="quitarDelCarrito(item.id)">Quitar</button>
+          </div>
         </li>
       </ul>
 
       <!-- Totales -->
       <div class="totales">
-        <p>Subtotal: \${{ subtotal.toLocaleString('es-CL') }}</p>
-        <p>Descuento: −\${{ descuento.toLocaleString('es-CL') }}</p>
-        <p>Total: \${{ total.toLocaleString('es-CL') }}</p>
+        <p>Subtotal: <span class="monto">\${{ subtotal.toLocaleString('es-CL') }}</span></p>
+        <p>Descuento: <span class="monto">−\${{ descuento.toLocaleString('es-CL') }}</span></p>
+        <p class="totales-total">
+          Total: <span class="monto">\${{ total.toLocaleString('es-CL') }}</span>
+        </p>
       </div>
     </section>
+
     <!-- Datos del cliente -->
-    <section class="cliente">
+    <section class="panel panel-cliente">
       <h2>Tus datos</h2>
 
-      <div>
+      <div class="campo">
         <label>
           Nombre *
           <input
@@ -138,7 +166,7 @@ const puedeComprar = computed(() => {
         </label>
       </div>
 
-      <div>
+      <div class="campo">
         <label>
           Email *
           <input
@@ -150,14 +178,198 @@ const puedeComprar = computed(() => {
       </div>
 
       <button
+        class="btn btn-finalizar"
         :disabled="!puedeComprar"
+        @click="finalizarCompra"
       >
         Finalizar compra
       </button>
 
-      <p v-if="!puedeComprar">
+      <p v-if="!puedeComprar" class="ayuda">
         Completa carrito y datos
+      </p>
+
+      <p v-if="compraFinalizada" class="mensaje-exito">
+        ¡Gracias por tu compra, {{ cliente.nombre }}! Total pagado:
+        \${{ total.toLocaleString('es-CL') }}
       </p>
     </section>
   </main>
 </template>
+
+<style scoped>
+.app {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr;
+  gap: 1rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Paneles generales */
+.panel {
+  background-color: #f7f7f9;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.panel h2 {
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+}
+
+/* Listas */
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  background-color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.item-nombre {
+  font-weight: 600;
+}
+
+.item-precio {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.item-cantidad {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* Botones */
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
+}
+
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.btn-agregar {
+  background-color: #26a65b;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.btn-agregar:hover {
+  background-color: #1f8a4c;
+}
+
+.item-controles {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.btn-cantidad {
+  background-color: #ecf0f1;
+  color: #333;
+  padding-inline: 0.6rem;
+}
+
+.btn-quitar {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.btn-finalizar {
+  width: 100%;
+  margin-top: 0.75rem;
+  background-color: #3498db;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.btn-finalizar:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Carrito */
+.panel-carrito .totales {
+  margin-top: 0.8rem;
+  border-top: 1px solid #ddd;
+  padding-top: 0.6rem;
+}
+
+.panel-carrito .monto {
+  font-weight: 600;
+}
+
+.panel-carrito .totales-total {
+  margin-top: 0.4rem;
+  font-size: 1rem;
+}
+
+.carrito-vacio {
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+}
+
+/* Cliente */
+.panel-cliente .campo {
+  margin-bottom: 0.7rem;
+}
+
+.panel-cliente input {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.panel-cliente .ayuda {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #c0392b;
+}
+
+.mensaje-exito {
+  margin-top: 0.7rem;
+  padding: 0.6rem 0.7rem;
+  background-color: #e8f7e4;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #2e7d32;
+}
+
+/* Responsive simple */
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
